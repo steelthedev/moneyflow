@@ -8,7 +8,8 @@ mod db;
 
 
 struct AppState {
-    db: Mutex<sqlx::postgres::PgPool>
+    db: Mutex<sqlx::postgres::PgPool>,
+    secret_key: String
 }
 
 #[actix_web::main]
@@ -16,6 +17,7 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
 
     let database_url = env::var("DATABASE_URL").unwrap_or("Could not load database url".to_string());
+    let secret_key = env::var("SECRET_KEY").unwrap_or("Could not load secret key".to_string());
     let state = web::Data::new(AppState{
         db: Mutex::new(
             sqlx::postgres::PgPoolOptions::new()
@@ -23,7 +25,8 @@ async fn main() -> std::io::Result<()> {
             .connect(&database_url)
             .await
             .unwrap()
-        )
+        ),
+        secret_key
     }
 );
     HttpServer::new(move  || {
